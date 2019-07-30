@@ -1,0 +1,88 @@
+version: "3"
+
+services:
+  producer:
+    image: rmqdemo/producer:0.1
+    build:
+      context: ./app/producer
+      dockerfile: Dockerfile
+    networks:
+      rmq-ha:
+    depends_on:
+      - haproxy
+    restart: always
+
+  consumer:
+    image: rmqdemo/consumer:0.1
+    build:
+      context: ./app/consumer
+      dockerfile: Dockerfile
+    networks:
+      rmq-ha:
+    depends_on:
+      - haproxy
+    restart: always
+
+  rabbitmq1:
+    image: rabbitmq:3.7-management
+    hostname: rabbitmq1
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=123456
+    networks:
+      rmq-ha:
+        ipv4_address: 172.24.0.10
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+
+  rabbitmq2:
+    image: rabbitmq:3.7-management
+    hostname: rabbitmq2
+    networks:
+      rmq-ha:
+        ipv4_address: 172.24.0.11
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+    depends_on:
+      - rabbitmq1
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=123456
+    volumes:
+      - ./cluster/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
+
+  rabbitmq3:
+    image: rmqdemo/3.7-management
+    hostname: rabbitmq3
+    networks:
+      rmq-ha:
+        ipv4_address: 172.24.0.12
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+    depends_on:
+      - rabbitmq1
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=123456
+    volumes:
+      - ./cluster/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
+
+  haproxy:
+    image: haproxy:alpine
+    hostname: haproxy
+    volumes:
+      - "./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro"
+    ports:
+      - "8100:8100"
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      rmq-ha:
+    depends_on:
+      - rabbitmq1
+
+networks:
+  rmq-ha:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.24.0.0/24"
