@@ -2,7 +2,7 @@ FROM python:3-alpine
 
 WORKDIR /app/
 
-RUN pip install pika \
+RUN pip install pika retry \
         --index-url http://mirrors.aliyun.com/pypi/simple/ \
         --trusted-host mirrors.aliyun.com
 

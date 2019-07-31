@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=
 
+# Ref: https://pika.readthedocs.io/en/stable/examples/blocking_consume_recover_multiple_hosts.html
 
 import re
 import random
@@ -10,6 +11,7 @@ import time
 from datetime import datetime
 
 import pika
+from retry import retry
 
 
 if __name__ == "__main__":
@@ -20,24 +22,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__file__)
 
-    amqp_broker_host = os.getenv('AMQP_BROKER_HOST', 'haproxy')
-    amqp_broker_port = os.getenv('AMQP_BROKER_PORT', '5672')
+    # Assuming there are two hosts: rabbitmq2, and rabbitmq3
+    node2 = pika.URLParameters('amqp://172.24.0.11')
+    node3 = pika.URLParameters('amqp://172.24.0.12')
+    all_endpoints = [node2, node3]
 
-    connection = None
-    while not connection:
-        try:
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters(amqp_broker_host, amqp_broker_port))
-        except:
-            logger.error('Lost connection to %s', amqp_broker_host)
-            time.sleep(5)
-
-    channel = connection.channel()
-    channel.queue_declare(queue='test')
-
-    def callback(ch, method, properties, body):
+    def on_message(ch, method, properties, body):
         seq_num = int(re.findall('\d+', str(body))[0])
-        if seq_num % 100 == 0:
+        if seq_num % 1000 == 0:
             logger.info('Consumed %s', str(body))
 
         # insert a randon delay when acking messages
@@ -45,11 +37,31 @@ if __name__ == "__main__":
         # delay_seconds = random.randint(1, 3) * 0.1
         # connection.sleep(delay_seconds)
 
-        ch.basic_ack(delivery_tag = method.delivery_tag)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(
-        queue='test', on_message_callback=callback)
+    @retry(pika.exceptions.AMQPConnectionError, delay=5, jitter=(1, 3))
+    def consume():
+        random.shuffle(all_endpoints)
+        connection = pika.BlockingConnection(all_endpoints)
+        channel = connection.channel()
+        channel.basic_qos(prefetch_count=1)
 
-    logger.info('Waiting for messages. To exit press CTRL+C')
-    channel.start_consuming()
+        # This queue is intentionally non-durable. See http://www.rabbitmq.com/ha.html#non-mirrored-queue-behavior-on-node-failure
+        # to learn more.
+        channel.queue_declare('test')
+        channel.basic_consume('test', on_message)
+
+        try:
+            channel.start_consuming()
+        except KeyboardInterrupt:
+            channel.stop_consuming()
+            connection.close()
+        except pika.exceptions.ConnectionClosedByBroker:
+            # Uncomment this to make the example not attempt recovery
+            # from server-initiated connection closure, including
+            # when the node is stopped cleanly
+            # except pika.exceptions.ConnectionClosedByBroker:
+            #     pass
+            pass
+
+    consume()

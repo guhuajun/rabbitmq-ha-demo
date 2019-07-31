@@ -9,7 +9,7 @@ set -e
 
 # Do the cluster dance
 rabbitmqctl stop_app
-rabbitmqctl join_cluster rabbit@rabbitmq1
+rabbitmqctl join_cluster --ram rabbit@rabbitmq1
 
 # Stop the entire RMQ server. This is done so that we
 # can attach to it again, but without the -detached flag
