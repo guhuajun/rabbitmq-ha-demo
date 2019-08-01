@@ -6,10 +6,15 @@ services:
     build:
       context: ./app/producer
       dockerfile: Dockerfile
+    environment: 
+      - PRODUCER_DELAY=0.001
     networks:
       rmq-ha:
     depends_on:
       - rabbitmq1
+      - rabbitmq2
+      - rabbitmq3
+      - haproxy
     restart: always
 
   consumer:
@@ -21,6 +26,9 @@ services:
       rmq-ha:
     depends_on:
       - rabbitmq1
+      - rabbitmq2
+      - rabbitmq3
+      - haproxy
     restart: always
 
   rabbitmq1:
@@ -32,7 +40,7 @@ services:
       rmq-ha:
         ipv4_address: 172.24.0.10
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10"]
     volumes:
       - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
@@ -43,7 +51,7 @@ services:
       rmq-ha:
         ipv4_address: 172.24.0.11
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10"]
     depends_on:
       - rabbitmq1
     environment:
@@ -60,7 +68,7 @@ services:
       rmq-ha:
         ipv4_address: 172.24.0.12
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10", "-q"]
+      test: ["CMD", "rabbitmq-diagnostics", "ping", "-t", "10"]
     depends_on:
       - rabbitmq1
     environment:

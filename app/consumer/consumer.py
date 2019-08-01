@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     def on_message(ch, method, properties, body):
         seq_num = int(re.findall('\d+', str(body))[0])
-        if seq_num % 1000 == 0:
+        if seq_num % 500 == 0:
             logger.info('Consumed %s', str(body))
 
         # insert a randon delay when acking messages
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    @retry(pika.exceptions.AMQPConnectionError, delay=5, jitter=(1, 3))
+    @retry(pika.exceptions.AMQPConnectionError, delay=10, jitter=(1, 3))
     def consume():
         random.shuffle(all_endpoints)
         connection = pika.BlockingConnection(all_endpoints)
