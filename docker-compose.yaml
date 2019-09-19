@@ -62,7 +62,7 @@ services:
     entrypoint: /usr/local/bin/entrypoint.sh
 
   rabbitmq3:
-    image: rmqdemo/3.7-management
+    image: rabbitmq:3.7-management
     hostname: rabbitmq3
     networks:
       rmq-ha:
