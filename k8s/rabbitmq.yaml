@@ -1,29 +1,11 @@
 apiVersion: v1
 items:
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-        io.kompose.service: haproxy
-      name: haproxy
-    spec:
-      ports:
-        - name: "8100"
-          port: 8100
-          targetPort: 8100
-        - name: "5672"
-          port: 5672
-          targetPort: 5672
-        - name: "15672"
-          port: 15672
-          targetPort: 15672
-      selector:
-        io.kompose.service: haproxy
   - apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: consumer
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: consumer
       name: consumer
     spec:
       replicas: 1
@@ -31,7 +13,8 @@ items:
       template:
         metadata:
           labels:
-            io.kompose.service: consumer
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: consumer
         spec:
           containers:
             - image: 192.168.0.35/rmqdemo/consumer:0.1
@@ -48,7 +31,8 @@ items:
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: haproxy
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: haproxy
       name: haproxy
     spec:
       replicas: 1
@@ -56,7 +40,8 @@ items:
       template:
         metadata:
           labels:
-            io.kompose.service: haproxy
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: haproxy
         spec:
           containers:
             - image: haproxy:alpine
@@ -72,13 +57,24 @@ items:
                 requests:
                   cpu: 100m
                   memory: 200Mi
+              volumeMounts:
+              - name: haproxy-config
+                mountPath: /usr/local/etc/haproxy/
+          volumes:
+            - name: haproxy-config
+              configMap:
+                name: rmqdemo-config
+                items:
+                - key: haproxy.cfg
+                  path: haproxy.cfg
           hostname: haproxy
           restartPolicy: Always
   - apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: producer
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: producer
       name: producer
     spec:
       replicas: 1
@@ -86,7 +82,8 @@ items:
       template:
         metadata:
           labels:
-            io.kompose.service: producer
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: producer
         spec:
           containers:
             - env:
@@ -106,7 +103,8 @@ items:
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: rabbitmq1
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq1
       name: rabbitmq1
     spec:
       replicas: 1
@@ -114,13 +112,14 @@ items:
       template:
         metadata:
           labels:
-            io.kompose.service: rabbitmq1
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: rabbitmq1
         spec:
           containers:
             - env:
                 - name: RABBITMQ_ERLANG_COOKIE
                   value: "123456"
-              image: rabbitmq:3.7-management
+              image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
               livenessProbe:
                 exec:
                   command:
@@ -136,13 +135,25 @@ items:
                 requests:
                   cpu: 100m
                   memory: 200Mi
+              volumeMounts:
+              - name: rmq1-config
+                mountPath: /etc/rabbitmq/
+          volumes:
+            - name: rmq1-config
+              configMap:
+                name: rmqdemo-config
+                defaultMode: 511
+                items:
+                - key: rabbitmq.conf
+                  path: rabbitmq.conf
           hostname: rabbitmq1
           restartPolicy: Always
   - apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: rabbitmq2
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq2
       name: rabbitmq2
     spec:
       replicas: 1
@@ -151,15 +162,16 @@ items:
         metadata:
           creationTimestamp: null
           labels:
-            io.kompose.service: rabbitmq2
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: rabbitmq2
         spec:
           containers:
             - command:
-                - /usr/local/bin/entrypoint.sh
+                - /usr/local/bin/docker-entrypoint.sh
               env:
                 - name: RABBITMQ_ERLANG_COOKIE
                   value: "123456"
-              image: rabbitmq:3.7-management
+              image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
               livenessProbe:
                 exec:
                   command:
@@ -175,13 +187,34 @@ items:
                 requests:
                   cpu: 100m
                   memory: 200Mi
+              volumeMounts:
+              - name: rmq2-config
+                mountPath: /etc/rabbitmq/
+              - name: rmq2-entrypoint
+                mountPath: /usr/local/bin/
+          volumes:
+            - name: rmq2-config
+              configMap:
+                name: rmqdemo-config
+                defaultMode: 511
+                items:
+                - key: rabbitmq.conf
+                  path: rabbitmq.conf
+            - name: rmq2-entrypoint
+              configMap:
+                name: rmqdemo-config
+                defaultMode: 511
+                items:
+                - key: entrypoint.sh
+                  path: docker-entrypoint.sh
           hostname: rabbitmq2
           restartPolicy: Always
   - apiVersion: extensions/v1beta1
     kind: Deployment
     metadata:
       labels:
-        io.kompose.service: rabbitmq3
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq3
       name: rabbitmq3
     spec:
       replicas: 1
@@ -189,15 +222,16 @@ items:
       template:
         metadata:
           labels:
-            io.kompose.service: rabbitmq3
+            dce.daocloud.io/app: rabbitmq-demo
+            dce.daocloud.io/component: rabbitmq3
         spec:
           containers:
             - command:
-                - /usr/local/bin/entrypoint.sh
+                - /usr/local/bin/docker-entrypoint.sh
               env:
                 - name: RABBITMQ_ERLANG_COOKIE
                   value: "123456"
-              image: 192.168.0.35/rmqdemo/3.7-management
+              image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
               livenessProbe:
                 exec:
                   command:
@@ -213,6 +247,26 @@ items:
                 requests:
                   cpu: 100m
                   memory: 200Mi
+              volumeMounts:
+              - name: rmq3-config
+                mountPath: /etc/rabbitmq/
+              - name: rmq3-entrypoint
+                mountPath: /usr/local/bin/
+          volumes:
+            - name: rmq3-config
+              configMap:
+                name: rmqdemo-config
+                defaultMode: 511
+                items:
+                - key: rabbitmq.conf
+                  path: rabbitmq.conf
+            - name: rmq3-entrypoint
+              configMap:
+                name: rmqdemo-config
+                defaultMode: 511
+                items:
+                - key: entrypoint.sh
+                  path: docker-entrypoint.sh
           hostname: rabbitmq3
           restartPolicy: Always
 kind: List

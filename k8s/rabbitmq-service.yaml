@@ -1,0 +1,80 @@
+apiVersion: v1
+items:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: haproxy
+      name: haproxy
+    spec:
+      type: NodePort
+      ports:
+        - name: "8100"
+          port: 8100
+          targetPort: 8100
+        - name: "5672"
+          port: 5672
+          targetPort: 5672
+        - name: "15672"
+          port: 15672
+          targetPort: 15672
+      selector:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: haproxy
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq1
+      name: rabbitmq1
+    spec:
+      ports:
+        - name: "5672"
+          port: 5672
+          targetPort: 5672
+        - name: "15672"
+          port: 15672
+          targetPort: 15672
+      selector:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq1
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq2
+      name: rabbitmq2
+    spec:
+      ports:
+        - name: "5672"
+          port: 5672
+          targetPort: 5672
+        - name: "15672"
+          port: 15672
+          targetPort: 15672
+      selector:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq2
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq3
+      name: rabbitmq3
+    spec:
+      ports:
+        - name: "5672"
+          port: 5672
+          targetPort: 5672
+        - name: "15672"
+          port: 15672
+          targetPort: 15672
+      selector:
+        dce.daocloud.io/app: rabbitmq-demo
+        dce.daocloud.io/component: rabbitmq3
+kind: List
+metadata: {}

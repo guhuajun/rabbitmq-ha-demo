@@ -57,9 +57,9 @@ services:
     environment:
       - RABBITMQ_ERLANG_COOKIE=123456
     volumes:
-      - ./cluster/entrypoint.sh:/usr/local/bin/entrypoint.sh
+      - ./cluster/entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
       - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    entrypoint: /usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/docker-entrypoint.sh
 
   rabbitmq3:
     image: rabbitmq:3.7-management
@@ -74,9 +74,9 @@ services:
     environment:
       - RABBITMQ_ERLANG_COOKIE=123456
     volumes:
-      - ./cluster/entrypoint.sh:/usr/local/bin/entrypoint.sh
+      - ./cluster/entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
       - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    entrypoint: /usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/docker-entrypoint.sh
 
   haproxy:
     image: haproxy:alpine
