@@ -77,7 +77,7 @@ items:
         dce.daocloud.io/component: producer
       name: producer
     spec:
-      replicas: 1
+      replicas: 4
       strategy: {}
       template:
         metadata:
@@ -130,11 +130,11 @@ items:
               name: rabbitmq1
               resources:
                 limits:
-                  cpu: 100m
-                  memory: 200Mi
+                  cpu: 200m
+                  memory: 400Mi
                 requests:
-                  cpu: 100m
-                  memory: 200Mi
+                  cpu: 200m
+                  memory: 400Mi
               volumeMounts:
               - name: rmq1-config
                 mountPath: /etc/rabbitmq/
@@ -148,126 +148,126 @@ items:
                   path: rabbitmq.conf
           hostname: rabbitmq1
           restartPolicy: Always
-  - apiVersion: extensions/v1beta1
-    kind: Deployment
-    metadata:
-      labels:
-        dce.daocloud.io/app: rabbitmq-demo
-        dce.daocloud.io/component: rabbitmq2
-      name: rabbitmq2
-    spec:
-      replicas: 1
-      strategy: {}
-      template:
-        metadata:
-          creationTimestamp: null
-          labels:
-            dce.daocloud.io/app: rabbitmq-demo
-            dce.daocloud.io/component: rabbitmq2
-        spec:
-          containers:
-            - command:
-                - /usr/local/bin/docker-entrypoint.sh
-              env:
-                - name: RABBITMQ_ERLANG_COOKIE
-                  value: "123456"
-              image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
-              livenessProbe:
-                exec:
-                  command:
-                    - rabbitmq-diagnostics
-                    - ping
-                    - -t
-                    - "10"
-              name: rabbitmq2
-              resources:
-                limits:
-                  cpu: 100m
-                  memory: 200Mi
-                requests:
-                  cpu: 100m
-                  memory: 200Mi
-              volumeMounts:
-              - name: rmq2-config
-                mountPath: /etc/rabbitmq/
-              - name: rmq2-entrypoint
-                mountPath: /usr/local/bin/
-          volumes:
-            - name: rmq2-config
-              configMap:
-                name: rmqdemo-config
-                defaultMode: 511
-                items:
-                - key: rabbitmq.conf
-                  path: rabbitmq.conf
-            - name: rmq2-entrypoint
-              configMap:
-                name: rmqdemo-config
-                defaultMode: 511
-                items:
-                - key: entrypoint.sh
-                  path: docker-entrypoint.sh
-          hostname: rabbitmq2
-          restartPolicy: Always
-  - apiVersion: extensions/v1beta1
-    kind: Deployment
-    metadata:
-      labels:
-        dce.daocloud.io/app: rabbitmq-demo
-        dce.daocloud.io/component: rabbitmq3
-      name: rabbitmq3
-    spec:
-      replicas: 1
-      strategy: {}
-      template:
-        metadata:
-          labels:
-            dce.daocloud.io/app: rabbitmq-demo
-            dce.daocloud.io/component: rabbitmq3
-        spec:
-          containers:
-            - command:
-                - /usr/local/bin/docker-entrypoint.sh
-              env:
-                - name: RABBITMQ_ERLANG_COOKIE
-                  value: "123456"
-              image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
-              livenessProbe:
-                exec:
-                  command:
-                    - rabbitmq-diagnostics
-                    - ping
-                    - -t
-                    - "10"
-              name: rabbitmq3
-              resources:
-                limits:
-                  cpu: 100m
-                  memory: 200Mi
-                requests:
-                  cpu: 100m
-                  memory: 200Mi
-              volumeMounts:
-              - name: rmq3-config
-                mountPath: /etc/rabbitmq/
-              - name: rmq3-entrypoint
-                mountPath: /usr/local/bin/
-          volumes:
-            - name: rmq3-config
-              configMap:
-                name: rmqdemo-config
-                defaultMode: 511
-                items:
-                - key: rabbitmq.conf
-                  path: rabbitmq.conf
-            - name: rmq3-entrypoint
-              configMap:
-                name: rmqdemo-config
-                defaultMode: 511
-                items:
-                - key: entrypoint.sh
-                  path: docker-entrypoint.sh
-          hostname: rabbitmq3
-          restartPolicy: Always
+  # - apiVersion: extensions/v1beta1
+  #   kind: Deployment
+  #   metadata:
+  #     labels:
+  #       dce.daocloud.io/app: rabbitmq-demo
+  #       dce.daocloud.io/component: rabbitmq2
+  #     name: rabbitmq2
+  #   spec:
+  #     replicas: 1
+  #     strategy: {}
+  #     template:
+  #       metadata:
+  #         creationTimestamp: null
+  #         labels:
+  #           dce.daocloud.io/app: rabbitmq-demo
+  #           dce.daocloud.io/component: rabbitmq2
+  #       spec:
+  #         containers:
+  #           - command:
+  #               - /usr/local/bin/docker-entrypoint.sh
+  #             env:
+  #               - name: RABBITMQ_ERLANG_COOKIE
+  #                 value: "123456"
+  #             image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
+  #             livenessProbe:
+  #               exec:
+  #                 command:
+  #                   - rabbitmq-diagnostics
+  #                   - ping
+  #                   - -t
+  #                   - "10"
+  #             name: rabbitmq2
+  #             resources:
+  #               limits:
+  #                 cpu: 100m
+  #                 memory: 200Mi
+  #               requests:
+  #                 cpu: 100m
+  #                 memory: 200Mi
+  #             volumeMounts:
+  #             - name: rmq2-config
+  #               mountPath: /etc/rabbitmq/
+  #             - name: rmq2-entrypoint
+  #               mountPath: /usr/local/bin/
+  #         volumes:
+  #           - name: rmq2-config
+  #             configMap:
+  #               name: rmqdemo-config
+  #               defaultMode: 511
+  #               items:
+  #               - key: rabbitmq.conf
+  #                 path: rabbitmq.conf
+  #           - name: rmq2-entrypoint
+  #             configMap:
+  #               name: rmqdemo-config
+  #               defaultMode: 511
+  #               items:
+  #               - key: entrypoint.sh
+  #                 path: docker-entrypoint.sh
+  #         hostname: rabbitmq2
+  #         restartPolicy: Always
+  # - apiVersion: extensions/v1beta1
+  #   kind: Deployment
+  #   metadata:
+  #     labels:
+  #       dce.daocloud.io/app: rabbitmq-demo
+  #       dce.daocloud.io/component: rabbitmq3
+  #     name: rabbitmq3
+  #   spec:
+  #     replicas: 1
+  #     strategy: {}
+  #     template:
+  #       metadata:
+  #         labels:
+  #           dce.daocloud.io/app: rabbitmq-demo
+  #           dce.daocloud.io/component: rabbitmq3
+  #       spec:
+  #         containers:
+  #           - command:
+  #               - /usr/local/bin/docker-entrypoint.sh
+  #             env:
+  #               - name: RABBITMQ_ERLANG_COOKIE
+  #                 value: "123456"
+  #             image: 192.168.0.35/rmqdemo/rabbitmq:3.7-management
+  #             livenessProbe:
+  #               exec:
+  #                 command:
+  #                   - rabbitmq-diagnostics
+  #                   - ping
+  #                   - -t
+  #                   - "10"
+  #             name: rabbitmq3
+  #             resources:
+  #               limits:
+  #                 cpu: 100m
+  #                 memory: 200Mi
+  #               requests:
+  #                 cpu: 100m
+  #                 memory: 200Mi
+  #             volumeMounts:
+  #             - name: rmq3-config
+  #               mountPath: /etc/rabbitmq/
+  #             - name: rmq3-entrypoint
+  #               mountPath: /usr/local/bin/
+  #         volumes:
+  #           - name: rmq3-config
+  #             configMap:
+  #               name: rmqdemo-config
+  #               defaultMode: 511
+  #               items:
+  #               - key: rabbitmq.conf
+  #                 path: rabbitmq.conf
+  #           - name: rmq3-entrypoint
+  #             configMap:
+  #               name: rmqdemo-config
+  #               defaultMode: 511
+  #               items:
+  #               - key: entrypoint.sh
+  #                 path: docker-entrypoint.sh
+  #         hostname: rabbitmq3
+  #         restartPolicy: Always
 kind: List
 metadata: {}

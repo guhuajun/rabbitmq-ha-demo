@@ -29,8 +29,6 @@ items:
       rabbitmq.conf: |
         loopback_users.guest = false
         listeners.tcp.default = 5672
-        management.listeners.port = 15672
-        management.listeners.ssl = false
         cluster_partition_handling = autoheal
       haproxy.cfg: |
         global
@@ -66,8 +64,8 @@ items:
             option  tcplog
             balance roundrobin
             server  rabbitmq1  rabbitmq1:5672  check  inter  5000  rise  2  fall  3
-            server  rabbitmq2  rabbitmq2:5672  check  inter  5000  rise  2  fall  3
-            server  rabbitmq3  rabbitmq3:5672  check  inter  5000  rise  2  fall  3
+            #Z server  rabbitmq2  rabbitmq2:5672  check  inter  5000  rise  2  fall  3
+            # server  rabbitmq3  rabbitmq3:5672  check  inter  5000  rise  2  fall  3
 
         listen rabbitmq_admin
             bind    0.0.0.0:15672
